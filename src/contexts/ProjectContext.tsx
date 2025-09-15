@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ProjectConfig, projects, getProjectById, getDefaultProject } from '../config/projects';
+import { projects, getProjectById, getDefaultProject } from '../config/projects';
+import type { ProjectConfig } from '../config/projects';
 
 interface ProjectContextType {
   currentProject: ProjectConfig;
