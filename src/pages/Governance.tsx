@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface Proposal {
   id: number;
@@ -136,6 +137,12 @@ const Governance: React.FC = () => {
     if (num > 30) return 'text-yellow-400';
     return 'text-red-400';
   };
+
+  const [showVote, setShowVote] = useState<null | Proposal>(null);
+  const [showDeposit, setShowDeposit] = useState<null | Proposal>(null);
+  const [voteChoice, setVoteChoice] = useState<'yes' | 'no' | 'abstain' | 'no_with_veto'>('yes');
+  const [depositAmt, setDepositAmt] = useState<number>(0);
+  const [slider, setSlider] = useState<number>(0);
 
   return (
     <div className="space-y-8">
@@ -306,22 +313,19 @@ const Governance: React.FC = () => {
                     <div className="flex justify-end space-x-3 mt-4">
                       {proposal.status === 'voting_period' && (
                         <>
-                          <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
-                            Vote Yes
-                          </button>
-                          <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
-                            Vote No
+                          <button onClick={() => setShowVote(proposal)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                            Vote / Deposit
                           </button>
                         </>
                       )}
                       {proposal.status === 'deposit_period' && (
-                        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        <button onClick={() => setShowDeposit(proposal)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
                           Add Deposit
                         </button>
                       )}
-                      <button className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
+                      <Link to={`/governance/proposals/${proposal.id}`} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
                         View Details
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -343,9 +347,61 @@ const Governance: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Vote Modal */}
+      {showVote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowVote(null)} />
+          <div className="relative bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4">Vote on Proposal #{showVote.id}</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Choice</label>
+                <select value={voteChoice} onChange={(e) => setVoteChoice(e.target.value as any)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="abstain">Abstain</option>
+                  <option value="no_with_veto">No with Veto</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Optional Deposit</label>
+                <input type="number" min={0} value={depositAmt} onChange={(e) => setDepositAmt(Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white" />
+                <input type="range" min={0} max={1000} value={slider} onChange={(e)=>{ setSlider(Number(e.target.value)); setDepositAmt(Number(e.target.value)); }} className="w-full mt-2" />
+                <div className="flex justify-between text-xs text-gray-400"><span>0</span><span>1000</span></div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button onClick={() => setShowVote(null)} className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">Cancel</button>
+                <button onClick={() => setShowVote(null)} className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500">Submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deposit Modal */}
+      {showDeposit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowDeposit(null)} />
+          <div className="relative bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Deposit to Proposal #{showDeposit.id}</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Amount</label>
+                <input type="number" min={0} value={depositAmt} onChange={(e) => setDepositAmt(Number(e.target.value))} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white" />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button onClick={() => setShowDeposit(null)} className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">Cancel</button>
+                <button onClick={() => setShowDeposit(null)} className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500">Confirm</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
 
 export default Governance;
+
 

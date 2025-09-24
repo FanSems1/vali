@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-interface Validator {
-  rank: number;
-  name: string;
-  address: string;
-  votingPower: string;
-  commission: string;
-  uptime: string;
-  status: 'active' | 'inactive' | 'jailed';
-  delegators: number;
-  selfStake: string;
-  totalStake: string;
-}
-
-const Validators: React.FC = () => {
+const Validators = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'rank' | 'votingPower' | 'commission' | 'uptime'>('rank');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'jailed'>('all');
+  const [sortBy, setSortBy] = useState('rank');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const validators: Validator[] = [
+  const validators = [
     {
       rank: 1,
       name: 'Cosmos Validator',
@@ -105,34 +93,42 @@ const Validators: React.FC = () => {
     }
   ];
 
-  const filteredValidators = validators.filter(validator => {
-    const matchesSearch = validator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         validator.address.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredValidators = validators.filter((validator) => {
+    const matchesSearch =
+      validator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      validator.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || validator.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-600';
-      case 'inactive': return 'bg-yellow-600';
-      case 'jailed': return 'bg-red-600';
-      default: return 'bg-gray-600';
+      case 'active':
+        return 'bg-green-600';
+      case 'inactive':
+        return 'bg-yellow-600';
+      case 'jailed':
+        return 'bg-red-600';
+      default:
+        return 'bg-gray-600';
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch (status) {
-      case 'active': return 'Active';
-      case 'inactive': return 'Inactive';
-      case 'jailed': return 'Jailed';
-      default: return 'Unknown';
+      case 'active':
+        return 'Active';
+      case 'inactive':
+        return 'Inactive';
+      case 'jailed':
+        return 'Jailed';
+      default:
+        return 'Unknown';
     }
   };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Validators</h1>
@@ -142,21 +138,20 @@ const Validators: React.FC = () => {
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>{validators.filter(v => v.status === 'active').length} Active</span>
+              <span>{validators.filter((v) => v.status === 'active').length} Active</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span>{validators.filter(v => v.status === 'inactive').length} Inactive</span>
+              <span>{validators.filter((v) => v.status === 'inactive').length} Inactive</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span>{validators.filter(v => v.status === 'jailed').length} Jailed</span>
+              <span>{validators.filter((v) => v.status === 'jailed').length} Jailed</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -176,7 +171,7 @@ const Validators: React.FC = () => {
           <div className="flex gap-4">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Status</option>
@@ -186,7 +181,7 @@ const Validators: React.FC = () => {
             </select>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value)}
               className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="rank">Sort by Rank</option>
@@ -198,7 +193,6 @@ const Validators: React.FC = () => {
         </div>
       </div>
 
-      {/* Validators Table */}
       <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -230,7 +224,11 @@ const Validators: React.FC = () => {
                         </span>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-white">{validator.name}</div>
+                        <div className="text-sm font-medium text-white">
+                          <Link className="text-purple-400 hover:text-purple-300 underline" to={`/validators/${validator.rank}`}>
+                            {validator.name}
+                          </Link>
+                        </div>
                         <div className="text-sm text-gray-400 font-mono">{validator.address}</div>
                       </div>
                     </div>
@@ -268,4 +266,6 @@ const Validators: React.FC = () => {
 };
 
 export default Validators;
+
+
 

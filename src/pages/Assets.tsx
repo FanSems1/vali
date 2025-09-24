@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useProject } from '../contexts/ProjectContext';
 
 const Assets: React.FC = () => {
   const { currentProject } = useProject();
   const [activeTab, setActiveTab] = useState<'overview' | 'staking' | 'rewards'>('overview');
+  const [sendModal, setSendModal] = useState<{ open: boolean, assetId: number | null }>({ open: false, assetId: null });
+  const [receiveModal, setReceiveModal] = useState<{ open: boolean, assetId: number | null }>({ open: false, assetId: null });
+  const [sendForm, setSendForm] = useState<{ address: string; amount: string }>({ address: '', amount: '' });
 
   // Mock user portfolio data
   const portfolioData = {
@@ -74,6 +77,10 @@ const Assets: React.FC = () => {
       maximumFractionDigits: decimals
     }).format(value);
   };
+
+  const selectedAsset = useMemo(() => {
+    return portfolioData.assets.find(a => a.id === (sendModal.open ? sendModal.assetId : receiveModal.assetId)) || portfolioData.assets[0];
+  }, [portfolioData.assets, sendModal, receiveModal]);
 
   return (
     <div className="space-y-6">
@@ -165,10 +172,16 @@ const Assets: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="px-3 py-1 bg-[var(--bg-secondary)] text-white text-sm rounded-md hover:bg-opacity-80">
+                    <button
+                      onClick={() => { setSendModal({ open: true, assetId: asset.id }); setSendForm({ address: '', amount: '' }); }}
+                      className="px-3 py-1 bg-[var(--bg-secondary)] text-white text-sm rounded-md hover:bg-opacity-80"
+                    >
                       Send
                     </button>
-                    <button className="px-3 py-1 bg-[var(--bg-secondary)] text-white text-sm rounded-md hover:bg-opacity-80">
+                    <button
+                      onClick={() => setReceiveModal({ open: true, assetId: asset.id })}
+                      className="px-3 py-1 bg-[var(--bg-secondary)] text-white text-sm rounded-md hover:bg-opacity-80"
+                    >
                       Receive
                     </button>
                   </div>
@@ -388,6 +401,92 @@ const Assets: React.FC = () => {
               </div>
               <button className="px-6 py-2 text-white rounded-lg font-medium" style={{ backgroundColor: currentProject.color }}>
                 Claim All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Modal */}
+      {sendModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 modal-backdrop" onClick={() => setSendModal({ open: false, assetId: null })}></div>
+          <div className="relative w-full max-w-md mx-4 card animate-fade-in-up">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Send {selectedAsset.symbol}</h3>
+              <button onClick={() => setSendModal({ open: false, assetId: null })} className="text-[var(--text-secondary)] hover:text-white">✕</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Recipient Address</label>
+                <input
+                  value={sendForm.address}
+                  onChange={(e) => setSendForm((f) => ({ ...f, address: e.target.value }))}
+                  placeholder="0x... or validator address"
+                  className="w-full p-3 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-lg text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--primary-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Amount</label>
+                <div className="relative">
+                  <input
+                    value={sendForm.amount}
+                    onChange={(e) => setSendForm((f) => ({ ...f, amount: e.target.value }))}
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full p-3 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-lg text-white placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--primary-color)]"
+                  />
+                  <div className="absolute right-3 top-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {selectedAsset.symbol}
+                  </div>
+                </div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                  Available: {formatNumber(selectedAsset.available)} {selectedAsset.symbol}
+                </div>
+              </div>
+              <button
+                onClick={() => setSendModal({ open: false, assetId: null })}
+                className="w-full p-3 text-white rounded-lg font-medium"
+                style={{ backgroundColor: currentProject.color }}
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receive Modal */}
+      {receiveModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 modal-backdrop" onClick={() => setReceiveModal({ open: false, assetId: null })}></div>
+          <div className="relative w-full max-w-md mx-4 card animate-fade-in-up">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Receive {selectedAsset.symbol}</h3>
+              <button onClick={() => setReceiveModal({ open: false, assetId: null })} className="text-[var(--text-secondary)] hover:text-white">✕</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Your Address</label>
+                <div className="p-3 bg-[var(--bg-hover)] border border-[var(--border-color)] rounded-lg text-white break-all">
+                  0x2545cA6f3b1E29Ff29B1A17b0e1A4f7C9cE29f2a
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="p-3 bg-white rounded-lg">
+                  <img
+                    alt="QR"
+                    className="w-40 h-40"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=0x2545cA6f3b1E29Ff29B1A17b0e1A4f7C9cE29f2a`}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => setReceiveModal({ open: false, assetId: null })}
+                className="w-full p-3 text-white rounded-lg font-medium"
+                style={{ backgroundColor: currentProject.color }}
+              >
+                Done
               </button>
             </div>
           </div>

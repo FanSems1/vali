@@ -178,7 +178,9 @@ const Transactions: React.FC = () => {
               {currentTransactions.map((tx) => (
                 <tr key={tx.hash} className="hover:bg-gray-700 transition-colors cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-mono text-gray-300">{tx.hash}</div>
+                    <a href={`/transactions/${tx.hash}`} className="text-sm font-mono text-purple-400 hover:text-purple-300">
+                      {tx.hash}
+                    </a>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(tx.type)} text-white`}>
@@ -260,4 +262,5 @@ const Transactions: React.FC = () => {
 };
 
 export default Transactions;
+
 

@@ -18,10 +18,10 @@ const Sidebar: React.FC = () => {
     { name: 'Governance', href: '/governance', icon: '🗳️' },
   ];
 
-  const systemItems = [
-    { name: 'Settings', href: '/settings', icon: '⚙️' },
-    { name: 'Logout', href: '/logout', icon: '🚪' },
-  ];
+  // const systemItems = [
+  //   { name: 'Settings', href: '/settings', icon: '⚙️' },
+  //   { name: 'Logout', href: '/logout', icon: '🚪' },
+  // ];
 
   return (
     <div className="sidebar">
@@ -73,7 +73,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* System Section */}
-      <div className="sidebar-section">
+      {/* <div className="sidebar-section">
         {systemItems.map((item) => (
           <Link
             key={item.name}
@@ -86,7 +86,7 @@ const Sidebar: React.FC = () => {
             <span className="text-sm font-medium">{item.name}</span>
           </Link>
         ))}
-      </div>
+      </div> */}
 
       {/* User Profile */}
       <div className="mt-auto p-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
