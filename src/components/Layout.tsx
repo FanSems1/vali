@@ -94,22 +94,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     ) }
                   </button>
                   {themeMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-40 rounded-md border" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+                    <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white border border-gray-200">
                       <button
                         onClick={() => { setTheme('light'); setThemeMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-hover)] ${theme === 'light' ? 'text-white' : 'text-[var(--text-secondary)]'}`}
+                        className={`w-full text-left px-3 py-2 text-sm ${theme === 'light' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         Light
                       </button>
                       <button
                         onClick={() => { setTheme('dark'); setThemeMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-hover)] ${theme === 'dark' ? 'text-white' : 'text-[var(--text-secondary)]'}`}
+                        className={`w-full text-left px-3 py-2 text-sm ${theme === 'dark' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         Dark
                       </button>
                       <button
                         onClick={() => { setTheme('system'); setThemeMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-hover)] ${theme === 'system' ? 'text-white' : 'text-[var(--text-secondary)]'}`}
+                        className={`w-full text-left px-3 py-2 text-sm ${theme === 'system' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         System
                       </button>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ProjectProvider } from './contexts/ProjectContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Validators from './pages/Validators.jsx';
@@ -16,9 +17,9 @@ import './App.css';
 
 function App() {
   return (
-    <ProjectProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-900 text-white">
+    <ThemeProvider>
+      <ProjectProvider>
+        <Router>
           <Layout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
@@ -33,9 +34,9 @@ function App() {
               <Route path="/assets" element={<Assets />} />
             </Routes>
           </Layout>
-        </div>
-      </Router>
-    </ProjectProvider>
+        </Router>
+      </ProjectProvider>
+    </ThemeProvider>
   );
 }
 

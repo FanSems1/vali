@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Validators = () => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('rank');
-  const [statusFilter, setStatusFilter] = useState('all');
-
+  
+  // Mock validators data
   const validators = [
     {
       rank: 1,
@@ -93,12 +92,18 @@ const Validators = () => {
     }
   ];
 
-  const filteredValidators = validators.filter((validator) => {
-    const matchesSearch =
-      validator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      validator.address.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || validator.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  // Sort validators based on selected criteria
+  const sortedValidators = [...validators].sort((a, b) => {
+    switch (sortBy) {
+      case 'votingPower':
+        return parseFloat(b.votingPower) - parseFloat(a.votingPower);
+      case 'commission':
+        return parseFloat(b.commission) - parseFloat(a.commission);
+      case 'uptime':
+        return parseFloat(b.uptime) - parseFloat(a.uptime);
+      default:
+        return a.rank - b.rank;
+    }
   });
 
   const getStatusColor = (status) => {
@@ -129,6 +134,7 @@ const Validators = () => {
 
   return (
     <div className="space-y-8">
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Validators</h1>
@@ -152,47 +158,23 @@ const Validators = () => {
         </div>
       </div>
 
+      {/* Sort Section */}
       <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search validators..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="jailed">Jailed</option>
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="rank">Sort by Rank</option>
-              <option value="votingPower">Sort by Voting Power</option>
-              <option value="commission">Sort by Commission</option>
-              <option value="uptime">Sort by Uptime</option>
-            </select>
-          </div>
+        <div className="flex justify-end">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="rank">Sort by Rank</option>
+            <option value="votingPower">Sort by Voting Power</option>
+            <option value="commission">Sort by Commission</option>
+            <option value="uptime">Sort by Uptime</option>
+          </select>
         </div>
       </div>
 
+      {/* Table Section */}
       <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -209,7 +191,7 @@ const Validators = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
-              {filteredValidators.map((validator) => (
+              {sortedValidators.map((validator) => (
                 <tr key={validator.rank} className="hover:bg-gray-700 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

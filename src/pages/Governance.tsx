@@ -21,6 +21,7 @@ interface Proposal {
 const Governance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'proposals' | 'create'>('proposals');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const proposals: Proposal[] = [
     {
@@ -106,7 +107,8 @@ const Governance: React.FC = () => {
   ];
 
   const filteredProposals = proposals.filter(proposal => 
-    statusFilter === 'all' || proposal.status === statusFilter
+    (statusFilter === 'all' || proposal.status === statusFilter) &&
+    (proposal.title.toLowerCase().includes(searchTerm.toLowerCase()) || proposal.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getStatusColor = (status: string) => {
@@ -199,155 +201,195 @@ const Governance: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700">
-        <div className="border-b border-gray-700">
-          <nav className="flex space-x-8 px-6">
-            <button
-              onClick={() => setActiveTab('proposals')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'proposals'
-                  ? 'border-purple-500 text-purple-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
-              }`}
-            >
-              Proposals
-            </button>
-            <button
-              onClick={() => setActiveTab('create')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'create'
-                  ? 'border-purple-500 text-purple-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
-              }`}
-            >
-              Create Proposal
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'proposals' && (
-            <div className="space-y-6">
-              {/* Filter */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-white">All Proposals</h3>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="deposit_period">Deposit Period</option>
-                  <option value="voting_period">Voting Period</option>
-                  <option value="passed">Passed</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="failed">Failed</option>
-                </select>
-              </div>
-
-              {/* Proposals List */}
-              <div className="space-y-4">
-                {filteredProposals.map((proposal) => (
-                  <div key={proposal.id} className="bg-gray-700 rounded-xl p-6 border border-gray-600">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="text-lg font-bold text-white">#{proposal.id}</span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(proposal.status)} text-white`}>
-                            {getStatusText(proposal.status)}
-                          </span>
-                        </div>
-                        <h4 className="text-lg font-semibold text-white mb-2">{proposal.title}</h4>
-                        <p className="text-gray-300 text-sm leading-relaxed">{proposal.description}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <div className="text-xs text-gray-400 mb-1">Proposer</div>
-                        <div className="text-sm font-mono text-gray-300">{proposal.proposer}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-400 mb-1">Total Deposit</div>
-                        <div className="text-sm text-white font-medium">{proposal.totalDeposit}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-400 mb-1">Submit Time</div>
-                        <div className="text-sm text-white">{proposal.submitTime}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-400 mb-1">Voting End</div>
-                        <div className="text-sm text-white">{proposal.votingEndTime}</div>
-                      </div>
-                    </div>
-
-                    {/* Voting Results */}
-                    {(proposal.status === 'voting_period' || proposal.status === 'passed' || proposal.status === 'rejected' || proposal.status === 'failed') && (
-                      <div className="border-t border-gray-600 pt-4">
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">Yes</div>
-                            <div className={`text-sm font-medium ${getVoteColor(proposal.yesVotes)}`}>{proposal.yesVotes}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">No</div>
-                            <div className={`text-sm font-medium ${getVoteColor(proposal.noVotes)}`}>{proposal.noVotes}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">Abstain</div>
-                            <div className="text-sm font-medium text-gray-300">{proposal.abstainVotes}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">No with Veto</div>
-                            <div className="text-sm font-medium text-red-400">{proposal.noWithVetoVotes}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-gray-400 mb-1">Turnout</div>
-                            <div className="text-sm font-medium text-white">{proposal.turnout}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="flex justify-end space-x-3 mt-4">
-                      {proposal.status === 'voting_period' && (
-                        <>
-                          <button onClick={() => setShowVote(proposal)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
-                            Vote / Deposit
-                          </button>
-                        </>
-                      )}
-                      {proposal.status === 'deposit_period' && (
-                        <button onClick={() => setShowDeposit(proposal)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-                          Add Deposit
-                        </button>
-                      )}
-                      <Link to={`/governance/proposals/${proposal.id}`} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
-                        View Details
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <div
+        className={
+          `filter-bar ${
+            document.documentElement.getAttribute('data-theme') === 'light'
+              ? 'bg-transparent p-0 border-none rounded-none'
+              : 'bg-gray-800 rounded-xl p-6 border border-gray-700'
+          }`
+        }
+      >
+        <nav className="flex space-x-4 mb-6">
+          <button
+            onClick={() => setActiveTab('proposals')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'proposals'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+            }`}
+          >
+            Proposals
+          </button>
+          <button
+            onClick={() => setActiveTab('create')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'create'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+            }`}
+          >
+            Create Proposal
+          </button>
+        </nav>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search proposals..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={
+                  document.documentElement.getAttribute('data-theme') === 'light'
+                    ? 'w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                    : 'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                }
+              />
+              <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-          )}
-
-          {activeTab === 'create' && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-lg font-semibold text-white">Create New Proposal</h3>
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">Proposal creation requires wallet connection</div>
-                <p className="text-sm text-gray-500 mb-6">Connect your wallet to create governance proposals and participate in network decisions.</p>
-                <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200">
-                  Connect Wallet
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className={
+              document.documentElement.getAttribute('data-theme') === 'light'
+                ? 'px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                : 'px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+            }
+          >
+            <option value="all">All Status</option>
+            <option value="deposit_period">Deposit Period</option>
+            <option value="voting_period">Voting Period</option>
+            <option value="passed">Passed</option>
+            <option value="rejected">Rejected</option>
+            <option value="failed">Failed</option>
+          </select>
         </div>
       </div>
-      {/* Vote Modal */}
+
+      <div className="p-6">
+        {activeTab === 'proposals' && (
+          <div className="space-y-6">
+            {/* Filter */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-white">All Proposals</h3>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="all">All Status</option>
+                <option value="deposit_period">Deposit Period</option>
+                <option value="voting_period">Voting Period</option>
+                <option value="passed">Passed</option>
+                <option value="rejected">Rejected</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+
+            {/* Proposals List */}
+            <div className="space-y-4">
+              {filteredProposals.map((proposal) => (
+                <div key={proposal.id} className="bg-gray-700 rounded-xl p-6 border border-gray-600">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className="text-lg font-bold text-white">#{proposal.id}</span>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(proposal.status)} text-white`}>
+                          {getStatusText(proposal.status)}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-semibold text-white mb-2">{proposal.title}</h4>
+                      <p className="text-gray-300 text-sm leading-relaxed">{proposal.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Proposer</div>
+                      <div className="text-sm font-mono text-gray-300">{proposal.proposer}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Total Deposit</div>
+                      <div className="text-sm text-white font-medium">{proposal.totalDeposit}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Submit Time</div>
+                      <div className="text-sm text-white">{proposal.submitTime}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Voting End</div>
+                      <div className="text-sm text-white">{proposal.votingEndTime}</div>
+                    </div>
+                  </div>
+
+                  {(proposal.status === 'voting_period' || proposal.status === 'passed' || proposal.status === 'rejected' || proposal.status === 'failed') && (
+                    <div className="border-t border-gray-600 pt-4">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-1">Yes</div>
+                          <div className={`text-sm font-medium ${getVoteColor(proposal.yesVotes)}`}>{proposal.yesVotes}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-1">No</div>
+                          <div className={`text-sm font-medium ${getVoteColor(proposal.noVotes)}`}>{proposal.noVotes}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-1">Abstain</div>
+                          <div className="text-sm font-medium text-gray-300">{proposal.abstainVotes}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-1">No with Veto</div>
+                          <div className="text-sm font-medium text-red-400">{proposal.noWithVetoVotes}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-1">Turnout</div>
+                          <div className="text-sm font-medium text-white">{proposal.turnout}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 mt-4">
+                    {proposal.status === 'voting_period' && (
+                      <>
+                        <button onClick={() => setShowVote(proposal)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                          Vote / Deposit
+                        </button>
+                      </>
+                    )}
+                    {proposal.status === 'deposit_period' && (
+                      <button onClick={() => setShowDeposit(proposal)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        Add Deposit
+                      </button>
+                    )}
+                    <Link to={`/governance/proposals/${proposal.id}`} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'create' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <h3 className="text-lg font-semibold text-white">Create New Proposal</h3>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">Proposal creation requires wallet connection</div>
+              <p className="text-sm text-gray-500 mb-6">Connect your wallet to create governance proposals and participate in network decisions.</p>
+              <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200">
+                Connect Wallet
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {showVote && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowVote(null)} />
@@ -378,7 +420,6 @@ const Governance: React.FC = () => {
         </div>
       )}
 
-      {/* Deposit Modal */}
       {showDeposit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowDeposit(null)} />
@@ -397,11 +438,8 @@ const Governance: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
 
 export default Governance;
-
-

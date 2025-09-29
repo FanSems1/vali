@@ -109,6 +109,13 @@ const Staking: React.FC = () => {
     alert(`Staking ${stakeAmount} VTEST to ${selectedValidator}`);
   };
 
+  const tabs = [
+    { id: 'overview', name: 'Overview', icon: '📊' },
+    { id: 'delegate', name: 'Delegate', icon: '➕' },
+    { id: 'undelegate', name: 'Undelegate', icon: '➖' },
+    { id: 'redelegate', name: 'Redelegate', icon: '🔄' }
+  ];
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -176,159 +183,200 @@ const Staking: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700">
-        <div className="border-b border-gray-700">
-          <nav className="flex space-x-8 px-6">
-            {[
-              { id: 'overview', name: 'Overview', icon: '📊' },
-              { id: 'delegate', name: 'Delegate', icon: '🔒' },
-              { id: 'undelegate', name: 'Undelegate', icon: '🔓' },
-              { id: 'redelegate', name: 'Redelegate', icon: '🔄' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? 'border-purple-500 text-purple-400'
-                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.name}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-white">Top Validators by Stake</h3>
-              <div className="space-y-4">
-                {validators.map((validator) => (
-                  <div key={validator.rank} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold">#{validator.rank}</span>
-                      </div>
-                      <div>
-                        <div className="text-white font-medium">{validator.name}</div>
-                        <div className="text-sm text-gray-400 font-mono">{validator.address}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                      <div className="text-center">
-                        <div className="text-sm text-gray-400">Commission</div>
-                        <div className="text-white font-medium">{validator.commission}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-400">Voting Power</div>
-                        <div className="text-white font-medium">{validator.votingPower}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-400">Total Stake</div>
-                        <div className="text-white font-medium">{validator.totalStake}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-400">Delegators</div>
-                        <div className="text-white font-medium">{validator.delegators}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-400">Uptime</div>
-                        <div className="text-white font-medium">{validator.uptime}</div>
-                      </div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(validator.status)} text-white`}>
-                        {validator.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <div
+        className={
+          `filter-bar ${
+            document.documentElement.getAttribute('data-theme') === 'light'
+              ? 'bg-transparent p-0 border-none rounded-none'
+              : 'bg-gray-800 rounded-xl p-6 border border-gray-700'
+          }`
+        }
+      >
+        <nav className="flex space-x-4 mb-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'delegate' | 'undelegate' | 'redelegate')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2 ${
+                activeTab === tab.id
+                  ? 'border-purple-500 text-purple-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.name}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search validators..."
+                className={
+                  document.documentElement.getAttribute('data-theme') === 'light'
+                    ? 'w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                    : 'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                }
+              />
+              <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-          )}
+          </div>
+          <select
+            className={
+              document.documentElement.getAttribute('data-theme') === 'light'
+                ? 'px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                : 'px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+            }
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="jailed">Jailed</option>
+          </select>
+          <select
+            className={
+              document.documentElement.getAttribute('data-theme') === 'light'
+                ? 'px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                : 'px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+            }
+          >
+            <option value="rank">Sort by Rank</option>
+            <option value="votingPower">Sort by Voting Power</option>
+            <option value="commission">Sort by Commission</option>
+            <option value="totalStake">Sort by Total Stake</option>
+          </select>
+        </div>
+      </div>
 
-          {activeTab === 'delegate' && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-lg font-semibold text-white">Delegate to Validator</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Select Validator</label>
-                  <select
-                    value={selectedValidator}
-                    onChange={(e) => setSelectedValidator(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">Choose a validator...</option>
-                    {validators.map((validator) => (
-                      <option key={validator.address} value={validator.address}>
-                        {validator.name} - {validator.commission} commission
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Amount to Delegate</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={stakeAmount}
-                      onChange={(e) => setStakeAmount(e.target.value)}
-                      placeholder="0.0"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <div className="absolute right-3 top-3 text-gray-400">VTEST</div>
+      <div className="p-6">
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-white">Top Validators by Stake</h3>
+            <div className="space-y-4">
+              {validators.map((validator) => (
+                <div key={validator.rank} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">#{validator.rank}</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{validator.name}</div>
+                      <div className="text-sm text-gray-400 font-mono">{validator.address}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-6">
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">Commission</div>
+                      <div className="text-white font-medium">{validator.commission}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">Voting Power</div>
+                      <div className="text-white font-medium">{validator.votingPower}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">Total Stake</div>
+                      <div className="text-white font-medium">{validator.totalStake}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">Delegators</div>
+                      <div className="text-white font-medium">{validator.delegators}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-400">Uptime</div>
+                      <div className="text-white font-medium">{validator.uptime}</div>
+                    </div>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(validator.status)} text-white`}>
+                      {validator.status}
+                    </span>
                   </div>
                 </div>
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-400">Available Balance</span>
-                    <span className="text-white font-medium">1,250.5 VTEST</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-400">Estimated Annual Reward</span>
-                    <span className="text-green-400 font-medium">~45.2 VTEST</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">Transaction Fee</span>
-                    <span className="text-white font-medium">0.001 VTEST</span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleStake}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-200"
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'delegate' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <h3 className="text-lg font-semibold text-white">Delegate to Validator</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Select Validator</label>
+                <select
+                  value={selectedValidator}
+                  onChange={(e) => setSelectedValidator(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  Delegate
-                </button>
+                  <option value="">Choose a validator...</option>
+                  {validators.map((validator) => (
+                    <option key={validator.address} value={validator.address}>
+                      {validator.name} - {validator.commission} commission
+                    </option>
+                  ))}
+                </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Amount to Delegate</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={stakeAmount}
+                    onChange={(e) => setStakeAmount(e.target.value)}
+                    placeholder="0.0"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <div className="absolute right-3 top-3 text-gray-400">VTEST</div>
+                </div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-400">Available Balance</span>
+                  <span className="text-white font-medium">1,250.5 VTEST</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-400">Estimated Annual Reward</span>
+                  <span className="text-green-400 font-medium">~45.2 VTEST</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Transaction Fee</span>
+                  <span className="text-white font-medium">0.001 VTEST</span>
+                </div>
+              </div>
+              <button
+                onClick={handleStake}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition-all duration-200"
+              >
+                Delegate
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === 'undelegate' && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-lg font-semibold text-white">Undelegate from Validator</h3>
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">No active delegations found</div>
-                <p className="text-sm text-gray-500">Connect your wallet and delegate to validators to see your positions here.</p>
-              </div>
+        {activeTab === 'undelegate' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <h3 className="text-lg font-semibold text-white">Undelegate from Validator</h3>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">No active delegations found</div>
+              <p className="text-sm text-gray-500">Connect your wallet and delegate to validators to see your positions here.</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === 'redelegate' && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <h3 className="text-lg font-semibold text-white">Redelegate to Another Validator</h3>
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">No active delegations found</div>
-                <p className="text-sm text-gray-500">Connect your wallet and delegate to validators to see your positions here.</p>
-              </div>
+        {activeTab === 'redelegate' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <h3 className="text-lg font-semibold text-white">Redelegate to Another Validator</h3>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">No active delegations found</div>
+              <p className="text-sm text-gray-500">Connect your wallet and delegate to validators to see your positions here.</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Staking;
-
-
